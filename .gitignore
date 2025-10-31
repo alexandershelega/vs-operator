@@ -1,0 +1,179 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go build artifacts
+bin/
+dist/
+build/
+*.test
+*.prof
+
+# Go module cache
+go.work
+go.work.sum
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+*.coverprofile
+coverage.txt
+coverage.html
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Docker build artifacts
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes secrets and sensitive files
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+kubeconfig
+.kubeconfig
+*-secret.yaml
+*-secrets.yaml
+secret-*.yaml
+secrets-*.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Compiled Object files
+*.o
+*.a
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# Local development files
+.local/
+local/
+tmp/
+temp/
+
+# Cache directories
+.cache/
+cache/
+
+# Generated documentation
+docs/_build/
+site/
+
+# Helm charts
+charts/*/charts/
+charts/*/requirements.lock
+
+# Operator SDK
+bundle/
+bundle.Dockerfile
+
+# Kustomize
+kustomization.yaml.bak
+
+# Test results
+test-results/
+junit.xml
+
+# Performance test results
+*.bench
+
+# Profiling data
+*.pprof
+*.trace
+
+# Air live reload
+.air.toml
+tmp/
+
+# GoReleaser
+dist/
