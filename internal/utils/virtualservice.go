@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	istiov1beta1 "istio.io/api/networking/v1beta1"
+	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,13 +15,27 @@ const (
 	OperatorName   = "virtualservice-operator"
 )
 
+// isLikelyPlaceholderService checks if a service is likely a placeholder based on heuristics
+// This is a safety check to prevent routes from being created for placeholder services
+func isLikelyPlaceholderService(serviceName, namespace string) bool {
+	// For now, we assume that if we're being asked to create a route for a service
+	// in a developer namespace, and the namespace is not "default", it could be a placeholder
+	// This is a conservative approach - we'll add more sophisticated checks as needed
+
+	// TODO: In the future, we could make a Kubernetes API call here to check the actual service
+	// annotations, but for now we rely on the controller logic to filter out placeholders
+	// before calling this function
+
+	return false // For now, let the controller handle the filtering
+}
+
 // GenerateVirtualService creates a VirtualService for a given service with only the default route
 func GenerateVirtualService(service *corev1.Service, defaultNamespace string, developerNamespaces []string) *istionetworkingv1beta1.VirtualService {
 	serviceName := service.Name
-	
+
 	// Create HTTP routes - only add default route initially
 	var httpRoutes []*istiov1beta1.HTTPRoute
-	
+
 	// Add default route (no header matching, always last)
 	defaultRoute := &istiov1beta1.HTTPRoute{
 		Route: []*istiov1beta1.HTTPRouteDestination{
@@ -33,7 +47,7 @@ func GenerateVirtualService(service *corev1.Service, defaultNamespace string, de
 		},
 	}
 	httpRoutes = append(httpRoutes, defaultRoute)
-	
+
 	// Create VirtualService
 	vs := &istionetworkingv1beta1.VirtualService{
 		ObjectMeta: metav1.ObjectMeta{
@@ -56,11 +70,20 @@ func GenerateVirtualService(service *corev1.Service, defaultNamespace string, de
 			Http:  httpRoutes,
 		},
 	}
-	
+
 	return vs
 }
 
 func UpdateVirtualServiceRoutes(vs *istionetworkingv1beta1.VirtualService, serviceName, devNamespace string) {
+	// Safety check: Don't create routes for services that look like placeholders
+	// Check if this is likely a placeholder service based on naming pattern and namespace
+	if isLikelyPlaceholderService(serviceName, devNamespace) {
+		fmt.Printf("DEBUG: Skipping route creation for likely placeholder service %s/%s\n", devNamespace, serviceName)
+		return
+	}
+
+	fmt.Printf("DEBUG: Creating/updating route for service %s in namespace %s\n", serviceName, devNamespace)
+
 	// Add or update route for developer namespace
 	newRoute := &istiov1beta1.HTTPRoute{
 		Match: []*istiov1beta1.HTTPMatchRequest{

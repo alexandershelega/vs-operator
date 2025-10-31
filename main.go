@@ -17,7 +17,6 @@ import (
 
 	istionetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 
-
 	"virtualservice-operator/controllers"
 	"virtualservice-operator/internal/config"
 	//+kubebuilder:scaffold:imports

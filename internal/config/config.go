@@ -12,15 +12,16 @@ import (
 
 // OperatorConfig represents the operator configuration
 type OperatorConfig struct {
-	DefaultNamespace    string   `yaml:"defaultNamespace"`
-	DeveloperNamespaces []string `yaml:"developerNamespaces"`
-	VirtualServiceTemplate string `yaml:"virtualServiceTemplate"`
+	DefaultNamespace          string   `yaml:"defaultNamespace"`
+	DeveloperNamespaces       []string `yaml:"developerNamespaces"`
+	VirtualServiceTemplate    string   `yaml:"virtualServiceTemplate"`
+	EnablePlaceholderServices bool     `yaml:"enablePlaceholderServices"`
 }
 
 // ConfigManager manages operator configuration
 type ConfigManager struct {
-	client    client.Client
-	namespace string
+	client        client.Client
+	namespace     string
 	configMapName string
 }
 
@@ -71,6 +72,6 @@ func (cm *ConfigManager) GetWatchedNamespaces(ctx context.Context) ([]string, er
 
 	namespaces := []string{config.DefaultNamespace}
 	namespaces = append(namespaces, config.DeveloperNamespaces...)
-	
+
 	return namespaces, nil
 }

@@ -1,0 +1,21 @@
+this all is totally ok and works fine.
+
+now i need extra functionality over what we have.
+
+We need create placeholder services in all developers namespaces for all service which exist in default namespace. That services should have some annotation or label based on which  controller will not create/update routes in virtualservice in default namespace for that services.  Example below.
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+name: {servicename}
+
+namespace: ${developer} # developer namespace
+
+spec:
+
+type: ExternalName
+
+externalName: ${servicename}.${namespace_default}.svc.cluster.local
