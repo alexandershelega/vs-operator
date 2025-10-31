@@ -1,0 +1,21 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ${name}-vitrual-service
+spec:
+  hosts:
+  - {servicename}
+  http:
+  ## this block should create when in developer namespace exist service with same name as default namespace
+  - match:
+    - headers:
+        x-developer:
+          exact: ${developer}
+    route:
+    - destination:
+        host: ${servicename}.${namespace}.svc.cluster.local
+  ## end block      
+  - route:
+    - destination:
+        host: ${servicename}.${namespace_default}.svc.cluster.local

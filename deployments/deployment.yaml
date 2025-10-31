@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: virtualservice-operator-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: virtualservice-operator
+  namespace: virtualservice-operator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: virtualservice-operator-role
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.istio.io"]
+  resources: ["virtualservices"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: virtualservice-operator-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: virtualservice-operator-role
+subjects:
+- kind: ServiceAccount
+  name: virtualservice-operator
+  namespace: virtualservice-operator-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: virtualservice-operator-config
+  namespace: virtualservice-operator-system
+data:
+  config.yaml: |
+    defaultNamespace: "default"
+    developerNamespaces:
+      - "default-test"
+      - "default-test2"
+      - "default-staging"
+    virtualServiceTemplate: |
+      apiVersion: networking.istio.io/v1beta1
+      kind: VirtualService
+      metadata:
+        name: "${serviceName}-virtual-service"
+        namespace: "${defaultNamespace}"
+      spec:
+        hosts:
+        - ${serviceName}
+        http:
+        # Developer routes will be injected here
+        - route:
+          - destination:
+              host: ${serviceName}.${defaultNamespace}.svc.cluster.local
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: virtualservice-operator
+  namespace: virtualservice-operator-system
+  labels:
+    app: virtualservice-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: virtualservice-operator
+  template:
+    metadata:
+      labels:
+        app: virtualservice-operator
+    spec:
+      serviceAccountName: virtualservice-operator
+      containers:
+      - name: manager
+        image: harbor.intent.ai/library/virtualservice-operator:v1.2.3
+        imagePullPolicy: Always
+        args:
+        - -config-map-name=virtualservice-operator-config
+        - -config-map-namespace=virtualservice-operator-system
+        - -metrics-bind-address=:8080
+        - -health-probe-bind-address=:8081
+        - -leader-elect
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65532
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: virtualservice-operator-metrics
+  namespace: virtualservice-operator-system
+  labels:
+    app: virtualservice-operator
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    app: virtualservice-operator
