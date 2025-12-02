@@ -88,7 +88,7 @@ spec:
       serviceAccountName: virtualservice-operator
       containers:
       - name: manager
-        image: harbor.intent.ai/library/virtualservice-operator:v1.3.0
+        image: harbor.intent.ai/library/virtualservice-operator:v1.4.0
         imagePullPolicy: Always
         args:
         - -config-map-name=virtualservice-operator-config

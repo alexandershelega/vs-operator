@@ -150,9 +150,14 @@ func (r *ServiceReconciler) createSinglePlaceholderService(ctx context.Context, 
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sourceService.Name,
 			Namespace: targetNamespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "Helm",
+			},
 			Annotations: map[string]string{
 				"virtualservice-operator/placeholder-service": "true",
 				"virtualservice-operator/source-service":      fmt.Sprintf("%s.%s.svc.cluster.local", sourceService.Name, config.DefaultNamespace),
+				"meta.helm.sh/release-name":                   sourceService.Name,
+				"meta.helm.sh/release-namespace":              targetNamespace,
 			},
 		},
 		Spec: corev1.ServiceSpec{
@@ -235,9 +240,14 @@ func (r *ServiceReconciler) createPlaceholderServices(ctx context.Context, sourc
 			ObjectMeta: ctrl.ObjectMeta{
 				Name:      sourceService.Name,
 				Namespace: devNamespace,
+				Labels: map[string]string{
+					"app.kubernetes.io/managed-by": "Helm",
+				},
 				Annotations: map[string]string{
 					"virtualservice-operator/placeholder-service": "true",
 					"virtualservice-operator/source-service":      fmt.Sprintf("%s.%s.svc.cluster.local", sourceService.Name, config.DefaultNamespace),
+					"meta.helm.sh/release-name":                   sourceService.Name,
+					"meta.helm.sh/release-namespace":              devNamespace,
 				},
 			},
 			Spec: corev1.ServiceSpec{
